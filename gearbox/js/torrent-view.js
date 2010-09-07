@@ -242,46 +242,44 @@ TorrentView = Ext.extend( Ext.grid.GridPanel,
         return str;
     },
 
-    generateProgressbarHtml: function( percentDone/*[0..1]*/, showText, record )
+    generateProgressbarHtml: function( percentDone/*[0..1]*/, compact, record )
     {
         var tor = record.data;
         var widthPct = Math.floor( 100 * percentDone );
+        var pctStr = compact ? [ widthPct, '%' ].join('') : '';
         var statusClass;
+        var text = [];
 
         switch( record.activity( ) )
         {
             case Torrent.STATUS_CHECK:
             case Torrent.STATUS_DOWNLOAD:
-                if( record.isMagnet( ) )
-                    statusClass = "magnet";
-                else
-                    statusClass = "download";
+                statusClass = record.isMagnet() ? 'magnet' : 'download';
                 break;
             case Torrent.STATUS_SEED:
-                statusClass = "seed";
+                statusClass = 'seed';
+                if( pctStr ) pctStr = '100%';
                 break;
             //case Torrent.STATUS_CHECK_WAIT:
             //case Torrent.STATUS_STOPPED:
             default:
-                statusClass = "stopped";
+                statusClass = 'stopped';
                 break;
         }
 
-        var text = ['<div style="text-align:center;  border:1px solid #dddddd; position:relative; width:100%;z-index:-1;">',
-                    '<div style="width:',widthPct,'%; overflow:hidden; position:absolute; top:0; left:0;">',
-                    '<div class="torrent_progress_bar ',statusClass,'"; style="width:',(widthPct?Math.floor(100*(100.0/widthPct)):0),'%">' ];
-        if( showText )
-                text.push( '<span>',widthPct,'%</span>' );
+        if( !pctStr ) pctStr = '&nbsp;';
+        if( compact )
+            text.push( '<div style="text-align:center;  border:1px solid #dddddd; position:relative; width:40px;float:right; margin-left:8px;">' );
         else
-                text.push( '&nbsp;' );
-        text.push( '</div>',
-                    '</div>',
-                    '<div class="torrent_progress_bar ',statusClass,' remain"><span>' );
-        if( showText )
-                text.push( '<span>', widthPct, '%</span>' );
-        else
-                text.push( '&nbsp;' );
-        text.push( '</div>', '</div>' );
+            text.push( '<div style="text-align:center;  border:1px solid #dddddd; position:relative; width:100%;">' );
+
+        text.push( '<div style="width:',widthPct,'%; overflow:hidden; position:absolute; top:0; left:0;">',
+                   '<div class="torrent_progress_bar ', statusClass,'"; style="width:',(widthPct?Math.floor(100*(100.0/widthPct)):0),'%">',
+                   pctStr,
+                   '</div>', '</div>',
+                   '<div class="torrent_progress_bar ', statusClass,' remain">',
+                   pctStr,
+                   '</div>', '</div>' );
         return text.join('');
     },
 
@@ -292,6 +290,7 @@ TorrentView = Ext.extend( Ext.grid.GridPanel,
         var isPaused = record.isPaused( );
         var strings = [];
         var percentDone;
+        var opacity = isPaused ? '0.55' : '1';
 
         if( record.isSeeding( ) )
         {
@@ -301,39 +300,32 @@ TorrentView = Ext.extend( Ext.grid.GridPanel,
         else
             percentDone = record.isMagnet( ) ? tor.metadataPercentComplete : record.percentDone( );
 
-        if( isPaused )
-                strings.push( '<div style="opacity:0.55">' );
+        var progressbarHtml = this.generateProgressbarHtml( percentDone, this.isCompact, record );
 
         if( this.isCompact )
         {
             var shortStatus = this.getShortStatusString( record, tor );
-            var progressbarHtml = this.generateProgressbarHtml( percentDone, true, record );
 
-            strings.push( '<img style="float:left; padding-right:10px; width:', this.iconSize, 'px; height:', this.iconSize, 'px;" src="', icon, '"/>',
-                          '<div style="float:right;">',
-                            '<div style="float:right; margin-left:8px; width:40px;">', progressbarHtml, '</div>',
+            strings.push( '<img style="opacity:',opacity,';float:left; padding-right:10px; width:', this.iconSize, 'px; height:', this.iconSize, 'px;" src="', icon, '"/>',
+                          '<div style="opacity:',opacity,';float:right;">',
+                            progressbarHtml,
                             '<span style="margin-left:8px; font-size:smaller">', shortStatus, '</span>',
                           '</div>',
-                        '<div style="overflow:hidden;">', record.getName(), '</div>' );
+                          '<div style="opacity:',opacity,';overflow:hidden;">', record.getName(), '</div>' );
         }
         else
         {
             var statusStr = this.getStatusString( record, tor );
             var progressStr = this.getProgressString( record, tor );
-            var progressbarHtml = this.generateProgressbarHtml( percentDone, false, record );
 
-            strings.push( '<div style="display:table">',
-                          '<div style="display:table-cell; vertical-align:middle;"><img style="width:',this.iconSize,'px; height:',this.iconSize,'px;" src="',icon,'"/>&nbsp;</div>',
-                          '<div style="display:table-cell; padding-left:8px; width:100%">',
-                          '<b>',record.getName(),'</b>','<br/>',
-                          progressStr,'</br>',
-                          progressbarHtml,
-                          statusStr,
-                          '</div>',
+            strings.push( '<div style="opacity:',opacity,';display:table-cell; vertical-align:middle;"><img style="width:',this.iconSize,'px; height:',this.iconSize,'px;" src="',icon,'"/>&nbsp;</div>',
+                          '<div style="opacity:',opacity,';display:table-cell; padding-left:8px; width:100%">',
+                            '<b>',record.getName(),'</b>','<br>',
+                            progressStr,'<br>',
+                            progressbarHtml,
+                            statusStr,
                           '</div>' );
         }
-        if( isPaused )
-                strings.push( '</div>' );
 
         return strings.join('');
     },
