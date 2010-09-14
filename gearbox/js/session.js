@@ -239,9 +239,9 @@ Ext.namespace( 'Transmission' );
             sendRequest( that, req, function( o ) { this.updateExtraStats( idArray ); } );
         },
 
-        removeTrackers: function( torrentId, announceUrlArray )
+        removeTrackers: function( torrentId, trackerIdArray )
         {
-            var req = { method: 'torrent-set', 'arguments': { ids: [ torrentId ], trackerRemove: announceUrlArray } };
+            var req = { method: 'torrent-set', 'arguments': { ids: [ torrentId ], trackerRemove: trackerIdArray } };
             sendRequest( that, req, function() { this.updateExtraStats( [ torrentId ] ); } );
         },
 
@@ -251,9 +251,9 @@ Ext.namespace( 'Transmission' );
             sendRequest( that, req, function() { this.updateExtraStats( [ torrentId ] ); } );
         },
 
-        replaceTracker: function( torrentId, oldUrl, newUrl )
+        replaceTracker: function( torrentId, trackerId, newUrl )
         {
-            var req = { method: 'torrent-set', 'arguments': { ids: [ torrentId ], trackerReplace: [ oldUrl, newUrl ] } };
+            var req = { method: 'torrent-set', 'arguments': { ids: [ torrentId ], trackerReplace: [ trackerId, newUrl ] } };
             sendRequest( that, req, function() { this.updateExtraStats( [ torrentId ] ); } );
         }
     });

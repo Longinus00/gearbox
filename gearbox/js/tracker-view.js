@@ -273,32 +273,30 @@ TrackerView = Ext.extend( Ext.Container,
         Ext.Msg.prompt( 'Add Announce URL', 'Enter the Announce URL to be added:', this.onAddPrompted, this );
     },
 
-    oldUrl: null,
-
     onEditPrompted: function( id, text )
     {
         if( id == 'ok' )
         {
             var newUrl = text.trim( );
-            this.session.replaceTracker( this.torrentId, this.oldUrl, newUrl );
+            var id = this.gridPanel.getSelectionModel().getSelected().data.id;
+            this.session.replaceTracker( this.torrentId, id, newUrl );
         }
     },
 
     onEditClicked: function( )
     {
-        var url = this.gridPanel.getSelectionModel().getSelected().data.announce;
-        this.oldUrl = url;
-        Ext.Msg.prompt( 'Edit URL', 'Edit this Announce URL:', this.onEditPrompted, this, false, url );
+        var announce = this.gridPanel.getSelectionModel().getSelected().data.announce;
+        Ext.Msg.prompt( 'Edit URL', 'Edit this Announce URL:', this.onEditPrompted, this, false, announce );
     },
 
     onRemoveClicked: function( )
     {
         var records = this.gridPanel.getSelectionModel().getSelections(),
             i = records.length,
-            urls = new Array( i );
+            ids = new Array( i );
         while( i-- )
-            urls[i] = records[i].data.announce;
-        this.session.removeTrackers( this.torrentId, urls );
+            ids[i] = records[i].data.id;
+        this.session.removeTrackers( this.torrentId, ids );
     },
 
     onRecordsLoaded: function( store, records, options )
